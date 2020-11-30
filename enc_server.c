@@ -143,8 +143,9 @@ int main(int argc, char *argv[])  {
     int int_key[message_length];
     int int_added[message_length];
     int int_result[message_length];
+    int i;
 
-    for (int i=0;i<message_length;i++){
+    for (i=0;i<message_length;i++){
       int_message[i] = message_buffer[i] - 'A';
       //printf("%d(%c) + ", int_message[i], message_buffer[i]);
       int_key[i] = key_buffer[i] - 'A';
@@ -170,7 +171,7 @@ int main(int argc, char *argv[])  {
     memset(char_message, '\0', message_length);
     printf("\n");
 
-    for (int i=0; i<message_length; i++ ){
+    for (i=0; i<message_length; i++ ){
       char_message[i] = int_result[i]+'A';
       //printf("%c",char_message[i] );
     }
