@@ -1,0 +1,117 @@
+#!/bin/bash
+
+#Check for thr right number of argument
+if test $# -gt 2 -o $# -lt 2
+then
+	echo $usage 1>&2
+	exit 1
+fi
+
+#Get the ports
+enc_port=$1
+dec_port=$2
+
+#Run servers on the daemons
+./enc_server $enc_port &
+./dec_server $dec_port &
+
+echo '#START TESTING SCRIPT'
+echo
+echo -----------------------------------------
+echo '(5 points for key20 must exist)'
+./keygen 20 > key20
+[ -s key20 ] || rm -f key20
+if [ -f key20 ]; then echo 'key20 exists!'; else echo 'key20 DOES NOT EXIST'; fi
+echo
+echo "-----------------------------------------"
+echo "(5 points: Number of characters must be 21)"
+wc -m key20
+echo
+echo "-----------------------------------------"
+echo "(5 points: Number of characters in key70000, should be 70001)"
+./keygen 70000 > key70000
+[ -s key70000 ] || rm -f key70000
+wc -m key70000
+echo
+echo "-----------------------------------------"
+echo "(10 points: Should return error about too-short key)"
+./enc_client plaintext1 key20 $enc_port
+echo
+echo "-----------------------------------------"
+echo "(20 points: Should return encrypted version of plaintext1)"
+./enc_client plaintext1 key70000 $enc_port
+echo
+echo '-----------------------------------------'
+echo "(10 points: ciphertext1 must exist)"
+./enc_client plaintext1 key70000 $enc_port > ciphertext1
+[ -s ciphertext1 ] || rm -f ciphertext1
+if [ -f ciphertext1 ]; then echo 'ciphertext1 exists!'; else echo 'ciphertext1 DOES NOT EXIST'; fi
+echo
+echo '-----------------------------------------'
+echo '(10 points: Both ciphertext1 and plaintext1 must have same number of chars)'
+wc -m plaintext1
+wc -m ciphertext1
+echo
+echo '-----------------------------------------'
+echo '(5 points: ciphertext1 should look encrypted)'
+cat ciphertext1
+echo
+echo '-----------------------------------------'
+echo '(5 points: Should fail giving error that dec_client cannot find dec_server)'
+./dec_client ciphertext1 key70000 $enc_port
+echo
+echo '-----------------------------------------'
+echo '(20 points: should return decrypted ciphertext1 that matches source)'
+echo 'Source:'
+cat plaintext1
+echo 'Return decrypted:'
+./dec_client ciphertext1 key70000 $dec_port
+echo
+echo '-----------------------------------------'
+echo "(10 points: plaintext1_a must exist)"
+./dec_client ciphertext1 key70000 $dec_port > plaintext1_a
+[ -s plaintext1_a ] || rm -f plaintext1_a
+if [ -f plaintext1_a ]; then echo 'plaintext1_a exists!'; else echo 'plaintext1_a DOES NOT EXIST'; fi
+echo
+echo '-----------------------------------------'
+echo '(5 points: plaintext1 must be same number of chars as plaintext1_a)'
+wc -m plaintext1
+wc -m plaintext1_a
+echo
+echo '-----------------------------------------'
+echo '(20 points: concurrent test of encryption - look for 4 ciphertext# files)'
+echo '(5 points: Should be only one error about plaintext5 being bad)'
+rm -f ciphertext*
+rm -f plaintext*_*
+./enc_client plaintext1 key70000 $enc_port > ciphertext1
+./enc_client plaintext2 key70000 $enc_port > ciphertext2
+./enc_client plaintext3 key70000 $enc_port > ciphertext3
+./enc_client plaintext4 key70000 $enc_port > ciphertext4
+./enc_client plaintext5 key70000 $enc_port > ciphertext5
+[ -s ciphertext1 ] || rm -f ciphertext1
+[ -s ciphertext2 ] || rm -f ciphertext2
+[ -s ciphertext3 ] || rm -f ciphertext3
+[ -s ciphertext4 ] || rm -f ciphertext4
+[ -s ciphertext5 ] || rm -f ciphertext5
+ls -1 | grep 'ciphertext.*'
+echo
+echo '-----------------------------------------'
+echo '(15 points: Concurrent test of decryption - '
+echo 'look for 4 plaintext#_a files that match the plaintext# files)'
+./dec_client ciphertext1 key70000 $dec_port > plaintext1_a
+./dec_client ciphertext2 key70000 $dec_port > plaintext2_a
+./dec_client ciphertext3 key70000 $dec_port > plaintext3_a
+./dec_client ciphertext4 key70000 $dec_port > plaintext4_a
+[ -s plaintext1_a ] || rm -f plaintext1_a
+[ -s plaintext2_a ] || rm -f plaintext2_a
+[ -s plaintext3_a ] || rm -f plaintext3_a
+[ -s plaintext4_a ] || rm -f plaintext4_a
+ls -1 | grep 'plaintext.*_a'
+echo
+echo '-----------------------------------------'
+echo 'Killing PID'
+killall enc_*
+killall dec_*
+echo
+echo '#END TESTING SCRIPT'
+echo

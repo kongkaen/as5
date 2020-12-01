@@ -13,9 +13,9 @@
 #define SIZE 150000
 
 /**
-* Encryption Client code
+* Decryption Client code
 * 1. Create a socket and connect to the server specified in the command arugments.
-* 2. Read input from file and send that input as a message to the server.
+* 2. Read plain text and key from file and send that input as a message to the server.
 * 3. Save the message received from the server to a file and exit the program.
 */
 
@@ -63,14 +63,14 @@ int main(int argc, char *argv[]) {
   char buffer[SIZE];
   char key_buffer[SIZE];
   char text_buffer[SIZE];
-  char cipher_buffer[SIZE];
+  char translate_text_buffer[SIZE];
   char recv_buffer[SIZE];
 
   // Clear out the buffer array
   memset(buffer, '\0', sizeof(buffer));
   memset(key_buffer, '\0', sizeof(key_buffer));
   memset(text_buffer, '\0', sizeof(text_buffer));
-  memset(cipher_buffer, '\0', sizeof(cipher_buffer));
+  memset(translate_text_buffer, '\0', sizeof(translate_text_buffer));
   memset(recv_buffer, '\0', sizeof(recv_buffer));
 
   // Check for correct arguments
@@ -93,8 +93,8 @@ int main(int argc, char *argv[]) {
     error("CLIENT: ERROR connecting");
   }
 
-  // send authentication for server to connect to only enc_client
-  char verify_client[] = "enc_client";
+  // send authentication for server to connect to only dec_client
+  char verify_client[] = "dec_client";
   charsWritten =  send(socketFD, verify_client, strlen(verify_client), 0);
 
   // Check if the message was sent to the server
@@ -104,10 +104,10 @@ int main(int argc, char *argv[]) {
       exit(1);
   }
 
-  // Clear authentication buffer
+  // Clear verification buffer
   memset(verify_client, '\0', sizeof(verify_client));
 
-  // Read message fron server
+  // Read message fron dec_server
   charsRead = recv(socketFD, verify_client, sizeof(buffer) - 1, 0);
 
   // Check if the message was received from the server
@@ -118,9 +118,9 @@ int main(int argc, char *argv[]) {
   }
 
   // Compare the message to verify with the server
-  if(strcmp(verify_client, "enc_client") != 0)
+  if(strcmp(verify_client, "dec_client") != 0)
   {
-      fprintf(stderr, "CLIENT: ERROR only enc_client can be connected to the server\n");
+      fprintf(stderr, "CLIENT: ERROR only enc_client can be connected to port %d\n", port_number);
       exit(2);
   }
 
@@ -180,17 +180,17 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-  // Receive ciphered text from the server
-  //memset(cipher_buffer, '\0', sizeof(cipher_buffer));
-  charsRead = recv(socketFD, cipher_buffer, sizeof(cipher_buffer) - 1, 0);
+  // Receive translate text text from the server
+  //memset(translate_text_buffer, '\0', sizeof(translate_text_buffer));
+  charsRead = recv(socketFD, translate_text_buffer, sizeof(translate_text_buffer) - 1, 0);
 
   if (charsRead < 0)
     {
       error("CLIENT: ERROR reading from socket - 1");
     }
 
-  // Print cipher text
-  printf("%s\n", cipher_buffer);
+  // Print translate text
+  printf("%s\n", translate_text_buffer);
 
   // Close socket
   close(socketFD);

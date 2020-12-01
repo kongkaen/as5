@@ -19,5 +19,7 @@ int main (int argc, char *argv[]) {
   for(i = 0;i < num_char;i++)
 		printf("%c", (rand()%(90-65))+65); //65 is ASCII for capital A, 90 is ASCII for capital Z
 
+  // add "\n" to the end of file
+  printf("\n");
   return 0;
 }

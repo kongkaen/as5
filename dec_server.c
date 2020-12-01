@@ -11,12 +11,12 @@
 
 #define SIZE 150000
 /**
-* Encryption Server code
-* 1. Create a socket and connect to the enc_client.
-* 2. Verify enc_client.
-* 3. Receive plaintext and key from enc_client
-* 4. Encrypt plaintext
-* 5. Send encrypted text back to enc_client.
+* Decryption Server code
+* 1. Create a socket and connect to the dec_client.
+* 2. Verify dec_client.
+* 3. Receive ciphered text and key from dec_client
+* 4. Decrypt the ciphered text
+* 5. Send decrypted text back to edec_client.
 */
 
 // Error function used for reporting issues
@@ -61,8 +61,8 @@ char intToChar(int num){
 	}
 }
 
-// Encrypt the text using One-Time-Pad
-void encryptText(char plainText[], char keyBuffer[], int length) {
+// Decrypt the text using One-Time-Pad
+void decryptText(char plainText[], char keyBuffer[], int length) {
   int i;
   char ch;
   // Loop through plaintext
@@ -71,7 +71,10 @@ void encryptText(char plainText[], char keyBuffer[], int length) {
     // convert key char to integer
     // add plainText integer and key integer
     // mod by 27
-    ch = (charToInt(plainText[i]) + charToInt(keyBuffer[i])) % 27;
+    ch = charToInt(plainText[i]) - charToInt(keyBuffer[i]);
+    if (ch < 0) {
+      ch += 27;
+    }
 
     // convert back to char
     plainText[i] = intToChar(ch);
@@ -110,6 +113,7 @@ int main(int argc, char *argv[])  {
 
   // Set up the address struct for the server socket
   setupAddressStruct(&serverAddress, atoi(argv[1]));
+
   // Set the socket options
   setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(int));
 
@@ -142,8 +146,7 @@ int main(int argc, char *argv[])  {
         exit(1);
     }
 
-    // Child process created
-
+    // Child process
     if (pid == 0)
     {
 
@@ -158,8 +161,8 @@ int main(int argc, char *argv[])  {
             exit(1);
         }
 
-        // Verify if message match the message sent from enc_client
-        if (strcmp(buffer, "enc_client") != 0)
+        // Verify if message match the message sent from dec_client
+        if (strcmp(buffer, "dec_client") != 0)
         {
             exit(2);
         }
@@ -198,14 +201,14 @@ int main(int argc, char *argv[])  {
             exit(1);
         }
 
-        // Encrypt the plaintext
-        encryptText(buffer, key_buffer, text_size);
+        // Decrypt the plaintext
+        decryptText(buffer, key_buffer, text_size);
 
-        // Send encrypted text back to the client
+        // Send decrypted text back to the client
         int charsWritten = send(connectionSocket, buffer, strlen(buffer), 0);
         if (charsWritten < 0)
         {
-            fprintf(stderr,  "SERVER: ERROR could not send 'encrypted text'\n");
+            fprintf(stderr,  "SERVER: ERROR could not send 'decrypted text'\n");
             exit(1);
         }
 
