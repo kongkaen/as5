@@ -83,16 +83,12 @@ echo '(20 points: concurrent test of encryption - look for 4 ciphertext# files)'
 echo '(5 points: Should be only one error about plaintext5 being bad)'
 rm -f ciphertext*
 rm -f plaintext*_*
-./enc_client plaintext1 key70000 $enc_port > ciphertext1
-./enc_client plaintext2 key70000 $enc_port > ciphertext2
-./enc_client plaintext3 key70000 $enc_port > ciphertext3
-./enc_client plaintext4 key70000 $enc_port > ciphertext4
-./enc_client plaintext5 key70000 $enc_port > ciphertext5
-[ -s ciphertext1 ] || rm -f ciphertext1
-[ -s ciphertext2 ] || rm -f ciphertext2
-[ -s ciphertext3 ] || rm -f ciphertext3
-[ -s ciphertext4 ] || rm -f ciphertext4
-[ -s ciphertext5 ] || rm -f ciphertext5
+./enc_client plaintext1 key70000 $enc_port > ciphertext1 &
+./enc_client plaintext2 key70000 $enc_port > ciphertext2 &
+./enc_client plaintext3 key70000 $enc_port > ciphertext3 &
+./enc_client plaintext4 key70000 $enc_port > ciphertext4 &
+./enc_client plaintext5 key70000 $enc_port > ciphertext5 &
+sleep 10
 ls -1 | grep 'ciphertext.*'
 echo
 echo '-----------------------------------------'
@@ -102,10 +98,7 @@ echo 'look for 4 plaintext#_a files that match the plaintext# files)'
 ./dec_client ciphertext2 key70000 $dec_port > plaintext2_a
 ./dec_client ciphertext3 key70000 $dec_port > plaintext3_a
 ./dec_client ciphertext4 key70000 $dec_port > plaintext4_a
-[ -s plaintext1_a ] || rm -f plaintext1_a
-[ -s plaintext2_a ] || rm -f plaintext2_a
-[ -s plaintext3_a ] || rm -f plaintext3_a
-[ -s plaintext4_a ] || rm -f plaintext4_a
+sleep 10
 ls -1 | grep 'plaintext.*_a'
 echo
 echo '-----------------------------------------'
