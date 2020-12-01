@@ -1,3 +1,9 @@
+/**
+* Natthaphong Kongkaew
+* kongkaen@oregonstate.edu
+* Assignment 5: One Time Pad
+* CS 344 Fall_2020 Oregonstate University
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
